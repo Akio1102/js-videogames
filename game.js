@@ -4,13 +4,20 @@ const game = canvas.getContext("2d");
 const btnLeft = document.querySelector("#left");
 const btnRight = document.querySelector("#right");
 const btnDown = document.querySelector("#down");
+
 let canvasSize;
 let elementsSize;
+let level = 0;
 
 const playerPosition = {
   x: undefined,
   y: undefined,
 };
+const giftPosition = {
+  x: undefined,
+  y: undefined,
+};
+let bombPosition = [];
 
 window.addEventListener("load", setCanvasSize);
 window.addEventListener("resize", setCanvasSize);
@@ -33,10 +40,15 @@ function startGame() {
   game.font = elementsSize + "px Verdana";
   game.textAlign = "end";
 
-  const map = maps[0];
+  const map = maps[level];
+  if (!map) {
+    gameWin();
+    return;
+  }
   const mapRows = map.trim().split("\n");
   const mapRowCol = mapRows.map((row) => row.trim().split(""));
 
+  bombPosition = [];
   game.clearRect(0, 0, canvasSize, canvasSize);
   mapRowCol.forEach((row, rowI) => {
     row.forEach((col, colI) => {
@@ -49,6 +61,14 @@ function startGame() {
           playerPosition.x = posX;
           playerPosition.y = posY;
         }
+      } else if (col == "I") {
+        giftPosition.x = posX;
+        giftPosition.y = posY;
+      } else if (col == "X") {
+        bombPosition.push({
+          x: posX,
+          y: posY,
+        });
       }
 
       game.fillText(emoji, posX, posY);
@@ -58,9 +78,37 @@ function startGame() {
 }
 
 function movedPlayer() {
+  const giftCollisionX =
+    playerPosition.x.toFixed(3) == giftPosition.x.toFixed(3);
+  const giftCollisionY =
+    playerPosition.y.toFixed(3) == giftPosition.y.toFixed(3);
+  const giftCollision = giftCollisionX && giftCollisionY;
+
+  if (giftCollision) {
+    levelWin();
+  }
+
+  const bombCollision = bombPosition.find((bomb) => {
+    const bombCollisionX = bomb.x.toFixed(3) == playerPosition.x.toFixed(3);
+    const bombCollisionY = bomb.y.toFixed(3) == playerPosition.y.toFixed(3);
+    return bombCollisionX && bombCollisionY;
+  });
+
+  if (bombCollision) {
+    console.log("Bombazo");
+  }
   game.fillText(emojis["PLAYER"], playerPosition.x, playerPosition.y);
 }
 
+function levelWin() {
+  console.log("Naiz");
+  level++;
+  startGame();
+}
+
+function gameWin() {
+  console.log("The End");
+}
 window.addEventListener("keydown", moveByKeys);
 btnUp.addEventListener("click", moveUp);
 btnLeft.addEventListener("click", moveLeft);
