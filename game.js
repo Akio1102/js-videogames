@@ -4,10 +4,12 @@ const game = canvas.getContext("2d");
 const btnLeft = document.querySelector("#left");
 const btnRight = document.querySelector("#right");
 const btnDown = document.querySelector("#down");
+const spanLives = document.querySelector("#lives");
 
 let canvasSize;
 let elementsSize;
 let level = 0;
+let lives = 3;
 
 const playerPosition = {
   x: undefined,
@@ -48,6 +50,7 @@ function startGame() {
   const mapRows = map.trim().split("\n");
   const mapRowCol = mapRows.map((row) => row.trim().split(""));
 
+  showLives();
   bombPosition = [];
   game.clearRect(0, 0, canvasSize, canvasSize);
   mapRowCol.forEach((row, rowI) => {
@@ -95,7 +98,7 @@ function movedPlayer() {
   });
 
   if (bombCollision) {
-    console.log("Bombazo");
+    levelFail();
   }
   game.fillText(emojis["PLAYER"], playerPosition.x, playerPosition.y);
 }
@@ -109,6 +112,29 @@ function levelWin() {
 function gameWin() {
   console.log("The End");
 }
+
+function levelFail() {
+  console.log("Fallaste");
+  lives--;
+
+  if (lives <= 0) {
+    level = 0;
+    lives = 3;
+  }
+
+  playerPosition.x = undefined;
+  playerPosition.y = undefined;
+  startGame();
+}
+
+function showLives() {
+  const heartArray = Array(lives).fill(emojis["HEART"]);
+  console.log(heartArray);
+
+  spanLives.innerHTML = "";
+  heartArray.forEach((heart) => spanLives.append(heart));
+}
+
 window.addEventListener("keydown", moveByKeys);
 btnUp.addEventListener("click", moveUp);
 btnLeft.addEventListener("click", moveLeft);
