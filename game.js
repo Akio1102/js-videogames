@@ -5,11 +5,19 @@ const btnLeft = document.querySelector("#left");
 const btnRight = document.querySelector("#right");
 const btnDown = document.querySelector("#down");
 const spanLives = document.querySelector("#lives");
+const spanTimes = document.querySelector("#times");
+const spanRecord = document.querySelector("#record");
+const pResult = document.querySelector("#result");
 
 let canvasSize;
 let elementsSize;
 let level = 0;
 let lives = 3;
+
+let timeStart;
+let timePlayer;
+let timeInterval;
+let record;
 
 const playerPosition = {
   x: undefined,
@@ -47,6 +55,13 @@ function startGame() {
     gameWin();
     return;
   }
+
+  if (!timeStart) {
+    timeStart = Date.now();
+    timeInterval = setInterval(showTimes, 100);
+    showRecord();
+  }
+
   const mapRows = map.trim().split("\n");
   const mapRowCol = mapRows.map((row) => row.trim().split(""));
 
@@ -111,6 +126,24 @@ function levelWin() {
 
 function gameWin() {
   console.log("The End");
+  clearInterval(timeInterval);
+
+  const recordTime = localStorage.getItem("record_time");
+  console.log(recordTime);
+  const playerTime = Date.now() - timeStart;
+  if (recordTime) {
+    if (recordTime >= playerTime) {
+      localStorage.setItem("record_time", playerTime);
+      pResult.innerHTML = "Superaste el record";
+    } else {
+      pResult.innerHTML = "no superaste nada";
+    }
+  } else {
+    localStorage.setItem("recor_time", playerTime);
+    pResult.innerHTML = "Primera vez intenta superarte";
+  }
+
+  console.log({ recordTime, playerTime });
 }
 
 function levelFail() {
@@ -120,6 +153,7 @@ function levelFail() {
   if (lives <= 0) {
     level = 0;
     lives = 3;
+    timeStart = undefined;
   }
 
   playerPosition.x = undefined;
@@ -135,6 +169,13 @@ function showLives() {
   heartArray.forEach((heart) => spanLives.append(heart));
 }
 
+function showTimes() {
+  spanTimes.innerHTML = Date.now() - timeStart;
+}
+
+function showRecord() {
+  spanRecord.innerHTML = localStorage.getItem("record_time");
+}
 window.addEventListener("keydown", moveByKeys);
 btnUp.addEventListener("click", moveUp);
 btnLeft.addEventListener("click", moveLeft);
@@ -159,7 +200,7 @@ function moveUp() {
 }
 function moveLeft() {
   console.log("Me muevo izq");
-  if (playerPosition.x - elementsSize < elementsSize) {
+  if (playerPosition.x - elementsSize < 0) {
     console.log("OUT");
   } else {
     playerPosition.x -= elementsSize;
